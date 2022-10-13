@@ -62,3 +62,8 @@ html, body, canvas {
 }
 
 
+@font-face {
+	font-family: 'bitbold';
+	src: url('fonts/bitbold.ttf') format('truetype');
+}
+
