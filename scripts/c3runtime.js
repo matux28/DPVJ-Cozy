@@ -3733,6 +3733,58 @@ true,nt,brushData);const w=this._auto.IsTileValid(west,true,wt,brushData);const 
 }
 
 {
+'use strict';{const C3=self.C3;const actionPromises=[];C3.Plugins.Audio=class AudioPlugin extends C3.SDKPluginBase{constructor(opts){super(opts)}_AddActionPromise(promise){actionPromises.push(promise)}static async WaitForAllActionPromises(){await Promise.all(actionPromises);C3.clearArray(actionPromises)}Release(){super.Release()}}}
+{const C3=self.C3;const C3X=self.C3X;C3.Plugins.Audio.Type=class AudioType extends C3.SDKTypeBase{constructor(objectClass){super(objectClass)}Release(){super.Release()}OnCreate(){}GetScriptInterfaceClass(){return self.IAudioObjectType}};function GetAudioDOMInterface(){if(self["C3Audio_DOMInterface"])return self["C3Audio_DOMInterface"];else throw new Error("audio scripting API cannot be used here - make sure the project is using DOM mode, not worker mode");}self.IAudioObjectType=class IAudioObjectType extends self.IObjectClass{constructor(objectType){super(objectType)}get audioContext(){return GetAudioDOMInterface().GetAudioContext()}get destinationNode(){return GetAudioDOMInterface().GetDestinationNode()}}}
+{const C3=self.C3;const DOM_COMPONENT_ID="audio";const LATENCY_HINTS=["interactive","balanced","playback"];C3.Plugins.Audio.Instance=class AudioInstance extends C3.SDKInstanceBase{constructor(inst,properties){super(inst,DOM_COMPONENT_ID);this._nextPlayTime=0;this._triggerTag="";this._timeScaleMode=0;this._saveLoadMode=0;this._playInBackground=false;this._panningModel=1;this._distanceModel=1;this._listenerX=this._runtime.GetViewportWidth()/2;this._listenerY=this._runtime.GetViewportHeight()/2;this._listenerZ=
+-600;this._referenceDistance=600;this._maxDistance=1E4;this._rolloffFactor=1;this._listenerInst=null;this._loadListenerUid=-1;this._masterVolume=1;this._isSilent=false;this._sampleRate=0;this._audioContextState="suspended";this._outputLatency=0;this._effectCount=new Map;this._preloadTotal=0;this._preloadCount=0;this._bufferMetadata=new Map;this._remoteUrls=new Map;let latencyHint="interactive";if(properties){this._timeScaleMode=properties[0];this._saveLoadMode=properties[1];this._playInBackground=
+properties[2];latencyHint=LATENCY_HINTS[properties[3]];this._panningModel=properties[4];this._distanceModel=properties[5];this._listenerZ=-properties[6];this._referenceDistance=properties[7];this._maxDistance=properties[8];this._rolloffFactor=properties[9]}this._lastAIState=[];this._lastFxState=[];this._lastAnalysersData=[];this.AddDOMMessageHandlers([["state",e=>this._OnUpdateState(e)],["audiocontext-state",e=>this._OnAudioContextStateChanged(e)],["fxstate",e=>this._OnUpdateFxState(e)],["trigger",
+e=>this._OnTrigger(e)],["buffer-metadata",e=>this._OnBufferMetadata(e)]]);const rt=this.GetRuntime().Dispatcher();this._disposables=new C3.CompositeDisposable(C3.Disposable.From(rt,"instancedestroy",e=>this._OnInstanceDestroyed(e.instance)),C3.Disposable.From(rt,"afterload",()=>this._OnAfterLoad()),C3.Disposable.From(rt,"suspend",()=>this._OnSuspend()),C3.Disposable.From(rt,"resume",()=>this._OnResume()));this._runtime.AddLoadPromise(this.PostToDOMAsync("create-audio-context",{"preloadList":this._runtime.GetAssetManager().GetAudioToPreload().map(o=>
+({"originalUrl":o.originalUrl,"url":o.url,"type":o.type,"fileSize":o.fileSize})),"isiOSCordova":this._runtime.IsiOSCordova(),"timeScaleMode":this._timeScaleMode,"latencyHint":latencyHint,"panningModel":this._panningModel,"distanceModel":this._distanceModel,"refDistance":this._referenceDistance,"maxDistance":this._maxDistance,"rolloffFactor":this._rolloffFactor,"listenerPos":[this._listenerX,this._listenerY,this._listenerZ]}).then(info=>{this._sampleRate=info["sampleRate"];this._audioContextState=
+info["audioContextState"];this._outputLatency=info["outputLatency"]}));this._StartTicking()}Release(){this._listenerInst=null;super.Release()}_AddActionPromise(promise){this.GetPlugin()._AddActionPromise(promise)}_OnInstanceDestroyed(inst){if(this._listenerInst===inst)this._listenerInst=null}DbToLinearNoCap(x){return Math.pow(10,x/20)}DbToLinear(x){const v=this.DbToLinearNoCap(x);if(!isFinite(v))return 0;return Math.max(Math.min(v,1),0)}LinearToDbNoCap(x){return Math.log(x)/Math.log(10)*20}LinearToDb(x){return this.LinearToDbNoCap(Math.max(Math.min(x,
+1),0))}_OnSuspend(){if(this._playInBackground)return;this.PostToDOM("set-suspended",{"isSuspended":true})}_OnResume(){if(this._playInBackground)return;this.PostToDOM("set-suspended",{"isSuspended":false})}_OnUpdateState(e){const tickCount=e["tickCount"];this._outputLatency=e["outputLatency"];const preservePlaceholders=this._lastAIState.filter(ai=>ai.hasOwnProperty("placeholder")&&(ai["placeholder"]>tickCount||ai["placeholder"]===-1));this._lastAIState=e["audioInstances"];this._lastAnalysersData=e["analysers"];
+if(preservePlaceholders.length>0)C3.appendArray(this._lastAIState,preservePlaceholders)}_OnBufferMetadata(e){this._bufferMetadata.set(e["originalUrl"],{duration:e["duration"]})}_OnAudioContextStateChanged(e){this._audioContextState=e["audioContextState"]}GetAudioContextState(){if(this._runtime.IsExportToVideo())return"running";else return this._audioContextState}_OnUpdateFxState(e){this._lastFxState=e["fxstate"]}_GetFirstAudioStateByTag(tag){for(const a of this._lastAIState)if(C3.equalsNoCase(a["tag"],
+tag))return a;return null}_IsTagPlaying(tag){return this._lastAIState.some(ai=>C3.equalsNoCase(tag,ai["tag"])&&ai["isPlaying"])}_MaybeMarkAsPlaying(originalUrl,tag,isMusic,isLooping,vol){if(this._IsTagPlaying(tag))return null;const bufferMeta=this._bufferMetadata.get(originalUrl);const state={"tag":tag,"duration":bufferMeta?bufferMeta.duration:0,"volume":vol,"isPlaying":true,"playbackTime":0,"playbackRate":1,"uid":-1,"bufferOriginalUrl":originalUrl,"bufferUrl":"","bufferType":"","isMusic":isMusic,
+"isLooping":isLooping,"isMuted":false,"resumePosition":0,"pan":null,"placeholder":-1};this._lastAIState.push(state);return state}async _OnTrigger(e){const type=e["type"];this._triggerTag=e["tag"];const aiId=e["aiid"];if(type==="ended"){for(const aiState of this._lastAIState)if(aiState["aiid"]===aiId){aiState["isPlaying"]=false;break}await this.TriggerAsync(C3.Plugins.Audio.Cnds.OnEnded)}else if(type==="fade-ended")await this.TriggerAsync(C3.Plugins.Audio.Cnds.OnFadeEnded)}Tick(){const o={"timeScale":this._runtime.GetTimeScale(),
+"gameTime":this._runtime.GetGameTimeRaw(),"instPans":this.GetInstancePans(),"tickCount":this._runtime.GetTickCountNoSave()};if(this._listenerInst){const wi=this._listenerInst.GetWorldInfo();this._listenerX=wi.GetX();this._listenerY=wi.GetY();o["listenerPos"]=[this._listenerX,this._listenerY,this._listenerZ]}this.PostToDOM("tick",o)}rotatePtAround(px,py,a,ox,oy){if(a===0)return[px,py];const sin_a=Math.sin(a);const cos_a=Math.cos(a);px-=ox;py-=oy;const left_sin_a=px*sin_a;const top_sin_a=py*sin_a;const left_cos_a=
+px*cos_a;const top_cos_a=py*cos_a;px=left_cos_a-top_sin_a;py=top_cos_a+left_sin_a;px+=ox;py+=oy;return[px,py]}GetInstancePans(){return this._lastAIState.filter(ai=>ai["uid"]!==-1).map(ai=>this._runtime.GetInstanceByUID(ai["uid"])).filter(inst=>inst).map(inst=>{const wi=inst.GetWorldInfo();const layerAngle=wi.GetLayer().GetAngle();const [x,y]=this.rotatePtAround(wi.GetX(),wi.GetY(),-layerAngle,this._listenerX,this._listenerY);return{"uid":inst.GetUID(),"x":x,"y":y,"angle":wi.GetAngle()-layerAngle}})}GetAnalyserData(tag,
+index){for(const o of this._lastAnalysersData)if(o.index===index&&C3.equalsNoCase(o.tag,tag))return o;return null}_IncrementEffectCount(tag){this._effectCount.set(tag,(this._effectCount.get(tag)||0)+1)}_ShouldSave(ai){if(ai.hasOwnProperty("placeholder"))return false;if(this._saveLoadMode===3)return false;else if(ai["isMusic"]&&this._saveLoadMode===1)return false;else if(!ai["isMusic"]&&this._saveLoadMode===2)return false;else return true}SaveToJson(){return{"isSilent":this._isSilent,"masterVolume":this._masterVolume,
+"listenerZ":this._listenerZ,"listenerUid":this._listenerInst?this._listenerInst.GetUID():-1,"remoteUrls":[...this._remoteUrls.entries()],"playing":this._lastAIState.filter(ai=>this._ShouldSave(ai)),"effects":this._lastFxState,"analysers":this._lastAnalysersData}}LoadFromJson(o){this._isSilent=o["isSilent"];this._masterVolume=o["masterVolume"];this._listenerZ=o["listenerZ"];this._listenerInst=null;this._loadListenerUid=o["listenerUid"];this._remoteUrls.clear();if(o["remoteUrls"])for(const [k,v]of o["remoteUrls"])this._remoteUrls.set(k,
+v);this._lastAIState=o["playing"];this._lastFxState=o["effects"];this._lastAnalysersData=o["analysers"]}_OnAfterLoad(){if(this._loadListenerUid!==-1){this._listenerInst=this._runtime.GetInstanceByUID(this._loadListenerUid);this._loadListenerUid=-1;if(this._listenerInst){const wi=this._listenerInst.GetWorldInfo();this._listenerX=wi.GetX();this._listenerY=wi.GetY()}}for(const ai of this._lastAIState){const info=this._runtime.GetAssetManager().GetProjectAudioFileUrl(ai["bufferOriginalUrl"]);if(info){ai["bufferUrl"]=
+info.url;ai["bufferType"]=info.type}else ai["bufferUrl"]=null}for(const fxChainData of Object.values(this._lastFxState))for(const fxData of fxChainData)if(fxData.hasOwnProperty("bufferOriginalUrl")){const info=this._runtime.GetAssetManager().GetProjectAudioFileUrl(fxData["bufferOriginalUrl"]);if(info){fxData["bufferUrl"]=info.url;fxData["bufferType"]=info.type}}this.PostToDOM("load-state",{"saveLoadMode":this._saveLoadMode,"timeScale":this._runtime.GetTimeScale(),"gameTime":this._runtime.GetGameTimeRaw(),
+"listenerPos":[this._listenerX,this._listenerY,this._listenerZ],"isSilent":this._isSilent,"masterVolume":this._masterVolume,"playing":this._lastAIState.filter(ai=>ai["bufferUrl"]!==null),"effects":this._lastFxState})}GetDebuggerProperties(){const fxProps=[];for(const [tag,fxChainData]of Object.entries(this._lastFxState))fxProps.push({name:"$"+tag,value:fxChainData.map(d=>d["type"]).join(", ")});const prefix="plugins.audio.debugger";return[{title:prefix+".tag-effects",properties:fxProps},{title:prefix+
+".currently-playing",properties:[{name:prefix+".currently-playing-count",value:this._lastAIState.length},...this._lastAIState.map((s,index)=>({name:"$#"+index,value:`${s["bufferOriginalUrl"]} ("${s["tag"]}") ${Math.round(s["playbackTime"]*10)/10} / ${Math.round(s["duration"]*10)/10}`}))]}]}}}
+{const C3=self.C3;C3.Plugins.Audio.Cnds={OnEnded(tag){return C3.equalsNoCase(this._triggerTag,tag)},OnFadeEnded(tag){return C3.equalsNoCase(this._triggerTag,tag)},PreloadsComplete(){return this._preloadCount===this._preloadTotal},AdvancedAudioSupported(){return true},IsSilent(){return this._isSilent},IsAnyPlaying(){for(const ai of this._lastAIState)if(ai["isPlaying"])return true;return false},IsTagPlaying(tag){return this._IsTagPlaying(tag)}}}
+{const C3=self.C3;const FILTER_TYPES=["lowpass","highpass","bandpass","lowshelf","highshelf","peaking","notch","allpass"];C3.Plugins.Audio.Acts={Play(file,looping,vol,tag,startOffset){const ret=C3.Plugins.Audio.Acts._DoPlay.call(this,file,looping,vol,tag,startOffset);this._AddActionPromise(ret);return ret},async _DoPlay(file,looping,vol,tag,startOffset){if(this._isSilent)return;const isMusic=file[1];const info=this._runtime.GetAssetManager().GetProjectAudioFileUrl(file[0]);if(!info)return;startOffset=
+startOffset?startOffset:0;const nextPlayTime=this._nextPlayTime;this._nextPlayTime=0;const state=this._MaybeMarkAsPlaying(file[0],tag.toLowerCase(),isMusic,looping!==0,this.DbToLinear(vol));try{await this.PostToDOMAsync("play",{"originalUrl":file[0],"url":info.url,"type":info.type,"isMusic":isMusic,"tag":tag.toLowerCase(),"isLooping":looping!==0,"vol":this.DbToLinear(vol),"pos":startOffset,"off":nextPlayTime,"trueClock":!!self["C3_GetAudioContextCurrentTime"]})}finally{if(state)state["placeholder"]=
+this._runtime.GetTickCountNoSave()}},async PlayAtPosition(file,looping,vol,x,y,angle,innerAngle,outerAngle,outerGain,tag){if(this._isSilent)return;const isMusic=file[1];const info=this._runtime.GetAssetManager().GetProjectAudioFileUrl(file[0]);if(!info)return;const nextPlayTime=this._nextPlayTime;this._nextPlayTime=0;const state=this._MaybeMarkAsPlaying(file[0],tag.toLowerCase(),isMusic,looping!==0,this.DbToLinear(vol));try{await this.PostToDOMAsync("play",{"originalUrl":file[0],"url":info.url,"type":info.type,
+"isMusic":isMusic,"tag":tag.toLowerCase(),"isLooping":looping!==0,"vol":this.DbToLinear(vol),"pos":0,"off":nextPlayTime,"trueClock":!!self["C3_GetAudioContextCurrentTime"],"panning":{"x":x,"y":y,"angle":C3.toRadians(angle),"innerAngle":C3.toRadians(innerAngle),"outerAngle":C3.toRadians(outerAngle),"outerGain":this.DbToLinear(outerGain)}})}finally{if(state)state["placeholder"]=this._runtime.GetTickCountNoSave()}},async PlayAtObject(file,looping,vol,objectClass,innerAngle,outerAngle,outerGain,tag){if(this._isSilent)return;
+if(!objectClass)return;const inst=objectClass.GetFirstPicked();if(!inst||!inst.GetWorldInfo())return;const wi=inst.GetWorldInfo();const layerAngle=wi.GetLayer().GetAngle();const [x,y]=this.rotatePtAround(wi.GetX(),wi.GetY(),-layerAngle,this._listenerX,this._listenerY);const isMusic=file[1];const info=this._runtime.GetAssetManager().GetProjectAudioFileUrl(file[0]);if(!info)return;const nextPlayTime=this._nextPlayTime;this._nextPlayTime=0;const state=this._MaybeMarkAsPlaying(file[0],tag.toLowerCase(),
+isMusic,looping!==0,this.DbToLinear(vol));try{await this.PostToDOMAsync("play",{"originalUrl":file[0],"url":info.url,"type":info.type,"isMusic":isMusic,"tag":tag.toLowerCase(),"isLooping":looping!==0,"vol":this.DbToLinear(vol),"pos":0,"off":nextPlayTime,"trueClock":!!self["C3_GetAudioContextCurrentTime"],"panning":{"x":x,"y":y,"angle":wi.GetAngle()-layerAngle,"innerAngle":C3.toRadians(innerAngle),"outerAngle":C3.toRadians(outerAngle),"outerGain":this.DbToLinear(outerGain),"uid":inst.GetUID()}})}finally{if(state)state["placeholder"]=
+this._runtime.GetTickCountNoSave()}},async PlayByName(folder,filename,looping,vol,tag){if(this._isSilent)return;const isMusic=folder===1;const info=this._runtime.GetAssetManager().GetProjectAudioFileUrl(filename)||this._remoteUrls.get(filename.toLowerCase());if(!info)return;const nextPlayTime=this._nextPlayTime;this._nextPlayTime=0;const state=this._MaybeMarkAsPlaying(filename,tag.toLowerCase(),isMusic,looping!==0,this.DbToLinear(vol));try{await this.PostToDOMAsync("play",{"originalUrl":filename,
+"url":info.url,"type":info.type,"isMusic":isMusic,"tag":tag.toLowerCase(),"isLooping":looping!==0,"vol":this.DbToLinear(vol),"pos":0,"off":nextPlayTime,"trueClock":!!self["C3_GetAudioContextCurrentTime"]})}finally{if(state)state["placeholder"]=this._runtime.GetTickCountNoSave()}},async PlayAtPositionByName(folder,filename,looping,vol,x,y,angle,innerAngle,outerAngle,outerGain,tag){if(this._isSilent)return;const isMusic=folder===1;const info=this._runtime.GetAssetManager().GetProjectAudioFileUrl(filename)||
+this._remoteUrls.get(filename.toLowerCase());if(!info)return;const nextPlayTime=this._nextPlayTime;this._nextPlayTime=0;const state=this._MaybeMarkAsPlaying(filename,tag.toLowerCase(),isMusic,looping!==0,this.DbToLinear(vol));try{await this.PostToDOMAsync("play",{"originalUrl":filename,"url":info.url,"type":info.type,"isMusic":isMusic,"tag":tag.toLowerCase(),"isLooping":looping!==0,"vol":this.DbToLinear(vol),"pos":0,"off":nextPlayTime,"trueClock":!!self["C3_GetAudioContextCurrentTime"],"panning":{"x":x,
+"y":y,"angle":C3.toRadians(angle),"innerAngle":C3.toRadians(innerAngle),"outerAngle":C3.toRadians(outerAngle),"outerGain":this.DbToLinear(outerGain)}})}finally{if(state)state["placeholder"]=this._runtime.GetTickCountNoSave()}},async PlayAtObjectByName(folder,filename,looping,vol,objectClass,innerAngle,outerAngle,outerGain,tag){if(this._isSilent)return;if(this._isSilent)return;if(!objectClass)return;const inst=objectClass.GetFirstPicked();if(!inst||!inst.GetWorldInfo())return;const wi=inst.GetWorldInfo();
+const layerAngle=wi.GetLayer().GetAngle();const [x,y]=this.rotatePtAround(wi.GetX(),wi.GetY(),-layerAngle,this._listenerX,this._listenerY);const isMusic=folder===1;const info=this._runtime.GetAssetManager().GetProjectAudioFileUrl(filename)||this._remoteUrls.get(filename.toLowerCase());if(!info)return;const nextPlayTime=this._nextPlayTime;this._nextPlayTime=0;const state=this._MaybeMarkAsPlaying(filename,tag.toLowerCase(),isMusic,looping!==0,this.DbToLinear(vol));try{await this.PostToDOMAsync("play",
+{"originalUrl":filename,"url":info.url,"type":info.type,"isMusic":isMusic,"tag":tag.toLowerCase(),"isLooping":looping!==0,"vol":this.DbToLinear(vol),"pos":0,"off":nextPlayTime,"trueClock":!!self["C3_GetAudioContextCurrentTime"],"panning":{"x":x,"y":y,"angle":wi.GetAngle()-layerAngle,"innerAngle":C3.toRadians(innerAngle),"outerAngle":C3.toRadians(outerAngle),"outerGain":this.DbToLinear(outerGain),"uid":inst.GetUID()}})}finally{if(state)state["placeholder"]=this._runtime.GetTickCountNoSave()}},SetLooping(tag,
+looping){this.PostToDOM("set-looping",{"tag":tag.toLowerCase(),"isLooping":looping===0})},SetMuted(tag,muted){this.PostToDOM("set-muted",{"tag":tag.toLowerCase(),"isMuted":muted===0})},SetVolume(tag,vol){this.PostToDOM("set-volume",{"tag":tag.toLowerCase(),"vol":this.DbToLinear(vol)})},FadeVolume(tag,vol,duration,ending){this.PostToDOM("fade-volume",{"tag":tag.toLowerCase(),"vol":this.DbToLinear(vol),"duration":duration,"stopOnEnd":ending===0})},async Preload(file){const isMusic=file[1];const info=
+this._runtime.GetAssetManager().GetProjectAudioFileUrl(file[0]);if(!info)return;this._preloadTotal++;await this.PostToDOMAsync("preload",{"originalUrl":file[0],"url":info.url,"type":info.type,"isMusic":isMusic});this._preloadCount++},async PreloadByName(folder,filename){const isMusic=folder===1;const info=this._runtime.GetAssetManager().GetProjectAudioFileUrl(filename)||this._remoteUrls.get(filename.toLowerCase());if(!info)return;this._preloadTotal++;await this.PostToDOMAsync("preload",{"originalUrl":filename,
+"url":info.url,"type":info.type,"isMusic":isMusic});this._preloadCount++},SetPlaybackRate(tag,rate){this.PostToDOM("set-playback-rate",{"tag":tag.toLowerCase(),"rate":Math.max(rate,0)})},Stop(tag){this.PostToDOM("stop",{"tag":tag.toLowerCase()})},StopAll(){this.PostToDOM("stop-all")},SetPaused(tag,state){this.PostToDOM("set-paused",{"tag":tag.toLowerCase(),"paused":state===0})},Seek(tag,pos){this.PostToDOM("seek",{"tag":tag.toLowerCase(),"pos":pos})},SetSilent(s){if(s===2)s=this._isSilent?1:0;s=s===
+0;if(this._isSilent===s)return;this._isSilent=s;this.PostToDOM("set-silent",{"isSilent":s})},SetMasterVolume(vol){const mv=this.DbToLinear(vol);if(this._masterVolume===mv)return;this._masterVolume=mv;this.PostToDOM("set-master-volume",{"vol":mv})},AddFilterEffect(tag,type,freq,detune,q,gain,mix){tag=tag.toLowerCase();const typeStr=FILTER_TYPES[type];this._IncrementEffectCount(tag);this.PostToDOM("add-effect",{"type":"filter","tag":tag,"params":[typeStr,freq,detune,q,gain,C3.clamp(mix/100,0,1)]})},
+AddDelayEffect(tag,delay,gain,mix){tag=tag.toLowerCase();this._IncrementEffectCount(tag);this.PostToDOM("add-effect",{"type":"delay","tag":tag,"params":[delay,this.DbToLinear(gain),C3.clamp(mix/100,0,1)]})},AddFlangerEffect(tag,delay,modulation,freq,feedback,mix){tag=tag.toLowerCase();this._IncrementEffectCount(tag);this.PostToDOM("add-effect",{"type":"flanger","tag":tag,"params":[delay/1E3,modulation/1E3,freq,feedback/100,C3.clamp(mix/100,0,1)]})},AddPhaserEffect(tag,freq,detune,q,mod,modfreq,mix){tag=
+tag.toLowerCase();this._IncrementEffectCount(tag);this.PostToDOM("add-effect",{"type":"phaser","tag":tag,"params":[freq,detune,q,mod,modfreq,C3.clamp(mix/100,0,1)]})},AddConvolutionEffect(tag,file,norm,mix){tag=tag.toLowerCase();const info=this._runtime.GetAssetManager().GetProjectAudioFileUrl(file[0]);if(!info)return;this._IncrementEffectCount(tag);this.PostToDOM("add-effect",{"type":"convolution","tag":tag,"bufferOriginalUrl":file[0],"bufferUrl":info.url,"bufferType":info.type,"params":[norm===
+0,C3.clamp(mix/100,0,1)]})},AddGainEffect(tag,g){tag=tag.toLowerCase();this._IncrementEffectCount(tag);this.PostToDOM("add-effect",{"type":"gain","tag":tag,"params":[this.DbToLinear(g)]})},AddMuteEffect(tag){tag=tag.toLowerCase();this._IncrementEffectCount(tag);this.PostToDOM("add-effect",{"type":"gain","tag":tag,"params":[0]})},AddTremoloEffect(tag,freq,mix){tag=tag.toLowerCase();this._IncrementEffectCount(tag);this.PostToDOM("add-effect",{"type":"tremolo","tag":tag,"params":[freq,C3.clamp(mix/100,
+0,1)]})},AddRingModEffect(tag,freq,mix){tag=tag.toLowerCase();this._IncrementEffectCount(tag);this.PostToDOM("add-effect",{"type":"ringmod","tag":tag,"params":[freq,C3.clamp(mix/100,0,1)]})},AddDistortionEffect(tag,threshold,headroom,drive,makeupgain,mix){tag=tag.toLowerCase();this._IncrementEffectCount(tag);this.PostToDOM("add-effect",{"type":"distortion","tag":tag,"params":[this.DbToLinearNoCap(threshold),this.DbToLinearNoCap(headroom),drive,this.DbToLinearNoCap(makeupgain),C3.clamp(mix/100,0,1)]})},
+AddCompressorEffect(tag,threshold,knee,ratio,attack,release){tag=tag.toLowerCase();this._IncrementEffectCount(tag);this.PostToDOM("add-effect",{"type":"compressor","tag":tag,"params":[threshold,knee,ratio,attack/1E3,release/1E3]})},AddAnalyserEffect(tag,fftSize,smoothing){tag=tag.toLowerCase();this._IncrementEffectCount(tag);this.PostToDOM("add-effect",{"type":"analyser","tag":tag,"params":[fftSize,smoothing]})},RemoveEffects(tag){tag=tag.toLowerCase();this._effectCount.set(tag,0);this.PostToDOM("remove-effects",
+{"tag":tag});this._lastFxState={}},SetEffectParameter(tag,index,param,value,ramp,time){this.PostToDOM("set-effect-param",{"tag":tag.toLowerCase(),"index":Math.floor(index),"param":param,"value":value,"ramp":ramp,"time":time})},SetListenerObject(objectClass){if(!objectClass)return;const inst=objectClass.GetFirstPicked();if(!inst||!inst.GetWorldInfo())return;this._listenerInst=inst},SetListenerZ(z){this._listenerZ=z},ScheduleNextPlay(t){this._nextPlayTime=Math.max(t,0)},UnloadAudio(file){const isMusic=
+file[1];const info=this._runtime.GetAssetManager().GetProjectAudioFileUrl(file[0]);if(!info)return;this.PostToDOM("unload",{"url":info.url,"type":info.type,"isMusic":isMusic})},UnloadAudioByName(folder,filename){const isMusic=folder===1;const info=this._runtime.GetAssetManager().GetProjectAudioFileUrl(filename)||this._remoteUrls.get(filename.toLowerCase());if(!info)return;this.PostToDOM("unload",{"url":info.url,"type":info.type,"isMusic":isMusic})},UnloadAll(){this.PostToDOM("unload-all")},AddRemoteURL(url,
+type,name){this._remoteUrls.set(name.toLowerCase(),{url,type})}}}
+{const C3=self.C3;C3.Plugins.Audio.Exps={Duration(tag){const a=this._GetFirstAudioStateByTag(tag);return a?a["duration"]:0},PlaybackTime(tag){const a=this._GetFirstAudioStateByTag(tag);return a?a["playbackTime"]:0},PlaybackRate(tag){const a=this._GetFirstAudioStateByTag(tag);return a?a["playbackRate"]:0},Volume(tag){const a=this._GetFirstAudioStateByTag(tag);return a?this.LinearToDb(a["volume"]):0},MasterVolume(){return this.LinearToDb(this._masterVolume)},EffectCount(tag){return this._effectCount.get(tag.toLowerCase())||
+0},AnalyserFreqBinCount(tag,index){const o=this.GetAnalyserData(tag,Math.floor(index));return o?o["binCount"]:0},AnalyserFreqBinAt(tag,index,bin){const o=this.GetAnalyserData(tag,Math.floor(index));if(!o)return 0;bin=Math.floor(bin);if(bin<0||bin>=o["binCount"])return 0;return o["freqBins"][bin]},AnalyserPeakLevel(tag,index){const o=this.GetAnalyserData(tag,Math.floor(index));return o?o["peak"]:0},AnalyserRMSLevel(tag,index){const o=this.GetAnalyserData(tag,Math.floor(index));return o?o["rms"]:0},
+SampleRate(){return this._sampleRate},CurrentTime(){if(self["C3_GetAudioContextCurrentTime"])return self["C3_GetAudioContextCurrentTime"]();else return performance.now()/1E3},OutputLatency(){return this._outputLatency}}};
+
+}
+
+{
 'use strict';{const C3=self.C3;const C3X=self.C3X;let tempVec2a=null;let tempVec2b=null;let vec2RecycleCache=[];let Box2D=null;let physicsBehavior=null;const PHYSICS_COLLISIONS_KEY="Physics_DisabledCollisions";function SetObjectTypeCollisionsEnabled(typeA,typeB,state){const savedA=typeA.GetSavedDataMap();const savedB=typeB.GetSavedDataMap();if(state){const setA=savedA.get(PHYSICS_COLLISIONS_KEY);if(setA)setA.delete(typeB.GetSID());const setB=savedB.get(PHYSICS_COLLISIONS_KEY);if(setB)setB.delete(typeA.GetSID())}else{let setA=
 savedA.get(PHYSICS_COLLISIONS_KEY);if(!setA){setA=new Set;savedA.set(PHYSICS_COLLISIONS_KEY,setA)}let setB=savedB.get(PHYSICS_COLLISIONS_KEY);if(!setB){setB=new Set;savedB.set(PHYSICS_COLLISIONS_KEY,setB)}setA.add(typeB.GetSID());setB.add(typeA.GetSID())}}C3.Behaviors.Physics=class PhysicsBehavior extends C3.SDKBehaviorBase{constructor(opts){opts.scriptInterfaceClass=self.IPhysicsBehavior;super(opts);this._world=null;this._worldG=10;this._worldScale=.02;this._worldManifold=null;this._lastUpdateTick=
 -1;this._steppingMode=1;this._velocityIterations=8;this._positionIterations=3;this._allCollisionsEnabled=true;this._runtime.AddLoadPromise(this._LoadBox2DWasm())}async _LoadBox2DWasm(){const box2dWasmUrl=await this._runtime.GetAssetManager().GetProjectFileUrl("box2d.wasm");await new Promise(resolve=>{self["Box2DWasmModule"]({"wasmBinaryFile":box2dWasmUrl}).then(box2d=>{Box2D=box2d;this._InitBox2DWorld();resolve()})})}_InitBox2DWorld(){const collisionEngine=this._runtime.GetCollisionEngine();tempVec2a=
@@ -3887,14 +3939,21 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Text,
 		C3.Behaviors.Anchor,
 		C3.Plugins.Tilemap,
+		C3.Plugins.Audio,
 		C3.Plugins.System.Cnds.OnLayoutStart,
 		C3.Plugins.Sprite.Acts.StopAnim,
+		C3.Plugins.Audio.Acts.Play,
+		C3.Plugins.System.Cnds.EveryTick,
 		C3.Plugins.Text.Acts.SetText,
+		C3.Plugins.Sprite.Acts.SetPos,
+		C3.Plugins.Sprite.Exps.X,
+		C3.Plugins.Sprite.Exps.Y,
 		C3.Plugins.System.Cnds.Every,
 		C3.Plugins.System.Cnds.CompareVar,
 		C3.Plugins.System.Acts.SubVar,
 		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.System.Acts.GoToLayout,
+		C3.Plugins.Audio.Acts.StopAll,
 		C3.Plugins.System.Cnds.IsGroupActive,
 		C3.Plugins.Mouse.Cnds.IsButtonDown,
 		C3.Plugins.Sprite.Cnds.IsBoolInstanceVarSet,
@@ -3904,8 +3963,6 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.System.Acts.CreateObject,
 		C3.Plugins.Mouse.Exps.X,
 		C3.Plugins.Mouse.Exps.Y,
-		C3.Plugins.Sprite.Exps.X,
-		C3.Plugins.Sprite.Exps.Y,
 		C3.Plugins.TiledBg.Acts.SetTowardPosition,
 		C3.Plugins.TiledBg.Acts.SetWidth,
 		C3.Plugins.TiledBg.Exps.X,
@@ -3922,6 +3979,7 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.System.Acts.Wait,
 		C3.Plugins.Sprite.Cnds.CompareInstanceVar,
 		C3.Plugins.Sprite.Acts.SetBoolInstanceVar,
+		C3.Plugins.System.Cnds.TriggerOnce,
 		C3.Plugins.System.Cnds.CompareBoolVar,
 		C3.Plugins.Sprite.Acts.SetInstanceVar,
 		C3.Plugins.System.Acts.AddVar,
@@ -3934,6 +3992,7 @@ self.C3_GetObjectRefTable = function () {
 };
 self.C3_JsPropNameTable = [
 	{puedeDobleSalto: 0},
+	{piedras: 0},
 	{Physics: 0},
 	{ScrollTo: 0},
 	{Flash: 0},
@@ -3961,11 +4020,13 @@ self.C3_JsPropNameTable = [
 	{fondo: 0},
 	{fondo2: 0},
 	{fondo3: 0},
+	{tierrita: 0},
+	{AuraExplosivo: 0},
+	{Reproductor: 0},
 	{objetivosRotos: 0},
 	{TiempoTotal: 0},
 	{sobrecargaCooldown: 0},
 	{nivelActual: 0},
-	{MechaFuego: 0},
 	{estado: 0}
 ];
 }
@@ -4067,10 +4128,16 @@ function or(l, r)
 }
 
 self.C3_ExpressionFuncs = [
+		() => 20,
+		() => "",
 		p => {
 			const v0 = p._GetNode(0).GetVar();
 			const v1 = p._GetNode(1).GetVar();
 			return () => and(and(v0.GetValue(), "/"), v1.GetValue());
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpObject();
 		},
 		() => 1,
 		() => 0,
@@ -4084,11 +4151,6 @@ self.C3_ExpressionFuncs = [
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();
-		},
-		() => "",
-		p => {
-			const n0 = p._GetNode(0);
-			return () => n0.ExpObject();
 		},
 		p => {
 			const n0 = p._GetNode(0);
@@ -4109,13 +4171,14 @@ self.C3_ExpressionFuncs = [
 			const n0 = p._GetNode(0);
 			return () => n0.ExpInstVar();
 		},
-		() => 20,
 		() => 3,
 		() => "sobrecarga",
+		() => "2",
 		() => 10,
 		() => 40,
+		() => "gana",
 		() => "REBOTES",
-		() => 800,
+		() => 1500,
 		p => {
 			const n0 = p._GetNode(0);
 			const n1 = p._GetNode(1);
@@ -4124,14 +4187,13 @@ self.C3_ExpressionFuncs = [
 			return () => C3.toDegrees(C3.angleTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), n3.ExpObject()));
 		},
 		() => 0.1,
+		() => 0.2,
 		() => "freeze",
 		() => 2,
 		() => "Trail Mecha",
 		() => 0.05,
 		() => 0.5,
 		() => "main",
-		() => "gana",
-		() => 0.2,
 		() => 30
 ];
 
