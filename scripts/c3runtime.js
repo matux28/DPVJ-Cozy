@@ -3942,6 +3942,7 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Audio,
 		C3.Plugins.System.Cnds.OnLayoutStart,
 		C3.Plugins.Sprite.Acts.StopAnim,
+		C3.Plugins.System.Cnds.CompareVar,
 		C3.Plugins.Audio.Acts.Play,
 		C3.Plugins.System.Cnds.EveryTick,
 		C3.Plugins.Text.Acts.SetText,
@@ -3949,7 +3950,6 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Exps.X,
 		C3.Plugins.Sprite.Exps.Y,
 		C3.Plugins.System.Cnds.Every,
-		C3.Plugins.System.Cnds.CompareVar,
 		C3.Plugins.System.Acts.SubVar,
 		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.System.Acts.GoToLayout,
@@ -4128,7 +4128,8 @@ function or(l, r)
 }
 
 self.C3_ExpressionFuncs = [
-		() => 20,
+		() => 1,
+		() => -5,
 		() => "",
 		p => {
 			const v0 = p._GetNode(0).GetVar();
@@ -4139,7 +4140,6 @@ self.C3_ExpressionFuncs = [
 			const n0 = p._GetNode(0);
 			return () => n0.ExpObject();
 		},
-		() => 1,
 		() => 0,
 		p => {
 			const v0 = p._GetNode(0).GetVar();
@@ -4171,6 +4171,7 @@ self.C3_ExpressionFuncs = [
 			const n0 = p._GetNode(0);
 			return () => n0.ExpInstVar();
 		},
+		() => 20,
 		() => 3,
 		() => "sobrecarga",
 		() => "2",
