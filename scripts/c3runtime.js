@@ -4306,7 +4306,7 @@ function or(l, r)
 }
 
 self.C3_ExpressionFuncs = [
-		() => 2,
+		() => -5,
 		() => 0,
 		() => "",
 		() => "accent-color",
@@ -4326,6 +4326,7 @@ self.C3_ExpressionFuncs = [
 		},
 		() => 0.1,
 		() => 1,
+		() => 2,
 		() => "pierde",
 		() => 100,
 		() => "Lanzamiento",
