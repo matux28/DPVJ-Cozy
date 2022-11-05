@@ -4194,6 +4194,8 @@ self.C3_JsPropNameTable = [
 	{warning: 0},
 	{freeze: 0},
 	{face: 0},
+	{nivelobjetivos: 0},
+	{levelInfo: 0},
 	{cuantoSumaPickables: 0},
 	{cuantoSumaBouncer: 0},
 	{cuantoRestaNitrogeno: 0},
@@ -4315,8 +4317,8 @@ self.C3_ExpressionFuncs = [
 		() => "yellow",
 		p => {
 			const v0 = p._GetNode(0).GetVar();
-			const v1 = p._GetNode(1).GetVar();
-			return () => and(and(v0.GetValue(), "/"), v1.GetValue());
+			const n1 = p._GetNode(1);
+			return () => and(and(v0.GetValue(), "/"), n1.ExpInstVar());
 		},
 		p => {
 			const n0 = p._GetNode(0);
