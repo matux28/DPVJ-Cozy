@@ -1,11 +1,11 @@
 {
-	"name": "Wrecking Mechor-18",
-	"short_name": "Wrecking Mechor-18",
+	"name": "Wrecking Mechor-23",
+	"short_name": "Wrecking Mechor-23",
 	"description": "",
 	"start_url": "index.html",
 	"display": "fullscreen",
 	"orientation": "landscape",
-	"background_color": "#ffffff",
+	"background_color": "#212121",
 	"icons": [
 		{
 			"src": "icons/icon-16.png",
